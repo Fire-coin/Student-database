@@ -6,10 +6,13 @@
 
 typedef unsigned short int USHORT;
 
+// Date will be counted in days from 01/jan/2000
+
 struct Record {
     std::string name;
     float weight;
     USHORT mark;
+    int date;
 };
 
 class Subject {
@@ -28,7 +31,7 @@ class Subject {
         // Setting functions
         void addRecord(Record newRecord);
         void setRecords(std::vector<Record> newRecords);
-        void changeRecord(std::string name, USHORT newMark, float newWeight);
+        void changeRecord(std::string name, USHORT newMark, float newWeight, int newDate);
         void changeRecord(std::string name, Record newRecord);
         void deleteRecord(std::string name);
         void changeName(std::string newName);

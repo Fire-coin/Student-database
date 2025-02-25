@@ -23,14 +23,21 @@ std::string Subject::getName() {
 }
 
 void Subject::addRecord(Record newRecord) {
-    records.push_back(newRecord);
+    this->records.push_back(newRecord);
+    sortTests(this->records);
 }
 
 void Subject::setRecords(std::vector<Record> newRecords) {
     this->records = newRecords;
 }
 
-void Subject::changeRecord(std::string name, USHORT newMark, float newWeight) {
+void sortTests(std::vector<Record>& records) {
+    std::sort(records.begin(), records.end(), [](auto& record1, auto& record2) {
+        return record1.date < record2.date;
+    });
+}
+
+void Subject::changeRecord(std::string name, USHORT newMark, float newWeight, int newDate) {
     auto it = std::find_if(this->records.begin(), this->records.end(), [this, name](auto& record) {
         return record.name == name;
     });
@@ -39,7 +46,9 @@ void Subject::changeRecord(std::string name, USHORT newMark, float newWeight) {
     } else {
         it->mark = newMark;
         it->weight = newWeight;
+        it->date = newDate;
     }
+    sortTests(this->records);
 }
 
 void Subject::changeRecord(std::string name, Record newRecord) {
@@ -51,6 +60,7 @@ void Subject::changeRecord(std::string name, Record newRecord) {
     } else {
         *it = newRecord;
     }
+    sortTests(this->records);
 }
 
 void Subject::deleteRecord(std::string name) {

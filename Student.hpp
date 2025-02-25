@@ -18,8 +18,8 @@ class Student {
         // Constructors
         Student();
         Student(std::string fullName, USHORT grade);
-        Student(unsigned int id, std::string fullName, USHORT grade);
-        Student(unsigned int id, std::string fullName, USHORT grade, std::vector<Subject> subjects);
+        Student(std::string fullName, USHORT grade, unsigned int id);
+        Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id);
 
         // Accesing functions
         std::string getName();

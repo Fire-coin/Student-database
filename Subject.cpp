@@ -3,6 +3,11 @@
 #include <algorithm>
 
 
+void sortTests(std::vector<Record>& records) {
+    std::sort(records.begin(), records.end(), [](auto& record1, auto& record2) {
+        return record1.date < record2.date;
+    });
+}
 
 Subject::Subject(std::string name) {
     this->subjectName = name;
@@ -29,12 +34,6 @@ void Subject::addRecord(Record newRecord) {
 
 void Subject::setRecords(std::vector<Record> newRecords) {
     this->records = newRecords;
-}
-
-void sortTests(std::vector<Record>& records) {
-    std::sort(records.begin(), records.end(), [](auto& record1, auto& record2) {
-        return record1.date < record2.date;
-    });
 }
 
 void Subject::changeRecord(std::string name, USHORT newMark, float newWeight, int newDate) {

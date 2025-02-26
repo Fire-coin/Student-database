@@ -30,6 +30,7 @@ class Subject {
 
         // Setting functions
         void addRecord(Record newRecord);
+        void addRecord(std::string name, USHORT mark, float weight, int date);
         void setRecords(std::vector<Record> newRecords);
         void changeRecord(std::string name, USHORT newMark, float newWeight, int newDate);
         void changeRecord(std::string name, Record newRecord);

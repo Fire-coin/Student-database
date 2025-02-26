@@ -9,6 +9,11 @@ void sortTests(std::vector<Record>& records) {
     });
 }
 
+Subject::Subject() {
+    this->subjectName = "None";
+    this->records = {};
+}
+
 Subject::Subject(std::string name) {
     this->subjectName = name;
     this->records = {};
@@ -30,6 +35,15 @@ std::string Subject::getName() {
 void Subject::addRecord(Record newRecord) {
     this->records.push_back(newRecord);
     sortTests(this->records);
+}
+
+void Subject::addRecord(std::string name, USHORT mark, float weight, int date) {
+    Record r;
+    r.name = name;
+    r.mark = mark;
+    r.weight = weight;
+    r.date = date;
+    this->records.push_back(r);
 }
 
 void Subject::setRecords(std::vector<Record> newRecords) {

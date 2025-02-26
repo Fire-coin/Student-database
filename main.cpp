@@ -28,32 +28,49 @@ std::string convertDate(int date);
 int main() {
     std::ifstream fin(DATA);
     if (fin.is_open()) {
-        std::vector<std::string> arr;
+        std::vector<std::string> arr1;
+        std::vector<std::string> arr2;
+        std::vector<std::string> arr3;
         std::string line;
-        while (std::getline(fin, line, ';')) {
-            arr = split(line, ',');
-            for (auto i: arr) {
-                std::cout << i << '\n';
+
+        while (std::getline(fin, line)) {
+            arr1 = split(line, ',');
+            // std::cout << "line: " << line << '\n';
+            std::shared_ptr<Student> student = std::make_shared<Student>(arr1[0], std::stoi(arr1[2]), std::stoi(arr1[1]));
+            Subject subject;
+            for (int i = 4; i < arr1.size(); ++i) {
+                arr2 = split(arr1[i], '$');
+                subject.changeName(arr2[0]);
+                for (int j = 1; j < arr2.size(); ++j) {
+                    // std::cout << arr2[j] << '\n';
+                    arr3 = split(arr2[j], '|');
+                    // for (auto k : arr3) {
+                    //     std::cout << k << '\n';
+                    // }
+                    subject.addRecord(arr3[0], std::stoi(arr3[1]), std::stof(arr3[2]), std::stoi(arr3[3]));
+                }
+                student->addSubject(subject);
             }
-            // std::cout << '\n';
         }
     } else {
         std::cerr << "Could not open file " << DATA << '\n';
     }
-    std::cout << convertDate("20/02/2025");
-
 
     return 0;
 }
 
 std::vector<std::string> split(const std::string& line, const char& delimiter) {
-    std::vector<std::string> output;
+    std::vector<std::string> output = {};
     std::stringstream ss(line);
     std::string helpingLine;
     while (std::getline(ss, helpingLine, delimiter)) {
         output.push_back(helpingLine);
     }
-
+    
+    // std::cout << "here2\n";
+    // for (auto i : output) {
+    //     std::cout << i << '\n';
+    // }
     return output;
 }
 

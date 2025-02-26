@@ -5,8 +5,8 @@ Student::Student() {
     studentCount++;
     this->fullName  = "";
     this->ID        = studentCount;
-    this-> grade    = -1;
-    this-> subjects = {};
+    this->grade     = -1;
+    this->subjects  = {};
 }
 
 Student::Student(std::string fullName, USHORT grade) {

@@ -8,6 +8,7 @@
 #include <memory>
 #include <ctime>
 #include <iomanip>
+#include <unordered_map>
 // #include <emscripten.h>
 
 // make permisions possible
@@ -32,24 +33,26 @@ int main() {
         std::vector<std::string> arr2;
         std::vector<std::string> arr3;
         std::string line;
+        std::unordered_map<int, std::unordered_map<char, std::vector<std::shared_ptr<Student>>>> classesMap;
+        std::unordered_map<int, std::unordered_map<std::string, std::vector<std::shared_ptr<Student>>>> subjectsMap;
+
 
         while (std::getline(fin, line)) {
             arr1 = split(line, ',');
-            // std::cout << "line: " << line << '\n';
-            std::shared_ptr<Student> student = std::make_shared<Student>(arr1[0], std::stoi(arr1[2]), std::stoi(arr1[1]));
+            std::shared_ptr<Student> student = std::make_shared<Student>(arr1[0], std::stoi(arr1[2]), std::stoi(arr1[1]), arr1[3][0]);
             Subject subject;
             for (int i = 4; i < arr1.size(); ++i) {
                 arr2 = split(arr1[i], '$');
                 subject.changeName(arr2[0]);
                 for (int j = 1; j < arr2.size(); ++j) {
-                    // std::cout << arr2[j] << '\n';
                     arr3 = split(arr2[j], '|');
-                    // for (auto k : arr3) {
-                    //     std::cout << k << '\n';
-                    // }
                     subject.addRecord(arr3[0], std::stoi(arr3[1]), std::stof(arr3[2]), std::stoi(arr3[3]));
                 }
                 student->addSubject(subject);
+            }
+            classesMap[student->getGrade()][student->getClass()].push_back(student);
+            for (auto sub : student->getSubjects()) {
+                subjectsMap[student->getGrade()][sub.getName()].push_back(student);
             }
         }
     } else {
@@ -66,11 +69,6 @@ std::vector<std::string> split(const std::string& line, const char& delimiter) {
     while (std::getline(ss, helpingLine, delimiter)) {
         output.push_back(helpingLine);
     }
-    
-    // std::cout << "here2\n";
-    // for (auto i : output) {
-    //     std::cout << i << '\n';
-    // }
     return output;
 }
 

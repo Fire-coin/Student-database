@@ -9,6 +9,7 @@
 #include <ctime>
 #include <iomanip>
 #include <unordered_map>
+#include <algorithm>
 // #include <emscripten.h>
 
 // make permisions possible
@@ -20,48 +21,108 @@ enum class Permition {
 constexpr char USERNAMES[14] = "usernames.txt";
 constexpr char DATA[] = "data.txt";
 constexpr std::pair<int, int> gradeSpan = {1, 13};
-constexpr int dateStart =  946684800;
+
+// First key of this map is the grade of student, then there are more maps,
+// and each one's key is the class of student (eg. A, B, C, .etc). The class 
+// is mapped to vector of shared pointers to students. This is done to prevent 
+// uneccerary iteration each time user wants to see each class individually.
+std::unordered_map<int, std::unordered_map<char, std::vector<std::shared_ptr<Student>>>> classesMap;
+
+// First key of this map is the grade of student, the grade maps to another map,
+// this map has key to one's subject (eg. Math, English, .etc). The subject is
+// mapped to a vector of shared pointers to students. This is done to prevent
+// uneccerary iteration each time user wants to see each subject of the grade individually.
+std::unordered_map<int, std::unordered_map<std::string, std::vector<std::shared_ptr<Student>>>> subjectsMap;
 
 std::vector<std::string> split(const std::string& line, const char& delimiter);
-int convertDate(const std::string& date);
+int convertDate(const std::string& date); // Convert normal date into program native one
 std::string convertDate(int date);
+int loadDataFromFile(std::string filename);
+
+int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, int newMark, float newWeight, int newDate);
 
 int main() {
-    std::ifstream fin(DATA);
-    if (fin.is_open()) {
-        std::vector<std::string> arr1;
-        std::vector<std::string> arr2;
-        std::vector<std::string> arr3;
-        std::string line;
-        std::unordered_map<int, std::unordered_map<char, std::vector<std::shared_ptr<Student>>>> classesMap;
-        std::unordered_map<int, std::unordered_map<std::string, std::vector<std::shared_ptr<Student>>>> subjectsMap;
 
-
-        while (std::getline(fin, line)) {
-            arr1 = split(line, ',');
-            std::shared_ptr<Student> student = std::make_shared<Student>(arr1[0], std::stoi(arr1[2]), std::stoi(arr1[1]), arr1[3][0]);
-            Subject subject;
-            for (int i = 4; i < arr1.size(); ++i) {
-                arr2 = split(arr1[i], '$');
-                subject.changeName(arr2[0]);
-                for (int j = 1; j < arr2.size(); ++j) {
-                    arr3 = split(arr2[j], '|');
-                    subject.addRecord(arr3[0], std::stoi(arr3[1]), std::stof(arr3[2]), std::stoi(arr3[3]));
-                }
-                student->addSubject(subject);
-            }
-            classesMap[student->getGrade()][student->getClass()].push_back(student);
-            for (auto sub : student->getSubjects()) {
-                subjectsMap[student->getGrade()][sub.getName()].push_back(student);
-            }
-        }
-    } else {
-        std::cerr << "Could not open file " << DATA << '\n';
+    int success = loadDataFromFile(DATA);
+    if (success == 0) {
+        std::cout << "Data loaded successfully\n";
     }
 
     return 0;
 }
 
+// Lets you edit record of a user
+int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, int newMark, float newWeight, int newDate) {
+    // Finding student in vector
+    auto it = std::find_if(subjectsMap[grade][subject].begin(), subjectsMap[grade][subject].end(), [studentName](auto student) {
+        return student->getName() == studentName;
+    });
+
+    if (it == subjectsMap[grade][subject].end()) {
+        return -1; // Student does not study this subject
+    }
+
+    auto student = *it;
+    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subject](auto sub) {
+        return sub.getName() == subject;
+    });
+
+    if (it2 == student->getSubjects().end()) {
+        return -1; // Student does not have record of writing this test on this subject
+    }
+
+    it2->changeRecord(newName, newMark, newWeight, newDate); // Editing record
+
+    return 0;
+}
+
+// Loads student data from specified file. Stores it into
+// global maps: classesMap & subjectsMap.
+int loadDataFromFile(std::string filename) {
+    std::ifstream fin(filename);
+    if (fin.is_open()) {
+        // Contains all details of student like name, grade,
+        // class and all subjects
+        std::vector<std::string> arguments; 
+        // Contains individual records from each subject
+        std::vector<std::string> records;
+        // Contains name, mark, wiegth and date from each record
+        std::vector<std::string> details;
+
+        // Helping buffer to load lines from file
+        std::string line;
+
+        while (std::getline(fin, line)) {
+            arguments = split(line, ',');
+            // Creating shared pointer to student to put in maps for faster access
+            std::shared_ptr<Student> student = std::make_shared<Student>(arguments[0], std::stoi(arguments[2]), std::stoi(arguments[1]), arguments[3][0]);
+            Subject subject;
+            for (int i = 4; i < arguments.size(); ++i) {
+                records = split(arguments[i], '$');
+                subject.changeName(records[0]); // Changing name of subject
+                for (int j = 1; j < records.size(); ++j) {
+                    details = split(records[j], '|');
+                    subject.addRecord(details[0], std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
+                }
+                student->addSubject(subject); // Adding subject to student
+            }
+            // Adding student into one's class
+            classesMap[student->getGrade()][student->getClass()].push_back(student);
+            for (auto sub : student->getSubjects()) {
+                // Adding student into one's subjects
+                subjectsMap[student->getGrade()][sub.getName()].push_back(student);
+            }
+        }
+    } else {
+        std::cerr << "Could not open file " << DATA << '\n';
+        return -1;
+    }
+
+    return 0;
+}
+
+
+ // Splits line on delimiter, returns vector of strings.
 std::vector<std::string> split(const std::string& line, const char& delimiter) {
     std::vector<std::string> output = {};
     std::stringstream ss(line);
@@ -72,6 +133,8 @@ std::vector<std::string> split(const std::string& line, const char& delimiter) {
     return output;
 }
 
+// Converts date from format DD/MM/YYYY into
+// amount of days passed since Jan 1 2000.
 int convertDate(const std::string& dateStr) {
     std::tm tm = {};
     std::istringstream ss(dateStr);

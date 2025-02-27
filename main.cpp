@@ -21,7 +21,7 @@ enum class Permition {
 constexpr char USERNAMES[14] = "usernames.txt";
 constexpr char DATA[] = "data.txt";
 constexpr std::pair<int, int> gradeSpan = {1, 13};
-
+typedef unsigned short int USHORT;
 // First key of this map is the grade of student, then there are more maps,
 // and each one's key is the class of student (eg. A, B, C, .etc). The class 
 // is mapped to vector of shared pointers to students. This is done to prevent 
@@ -39,7 +39,10 @@ int convertDate(const std::string& date); // Convert normal date into program na
 std::string convertDate(int date);
 int loadDataFromFile(std::string filename);
 
-int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, int newMark, float newWeight, int newDate);
+int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, USHORT newMark, float newWeight, int newDate);
+int removeRecord(std::string studentName, int grade, std::string subjectName, std::string recordName);
+int addRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, USHORT mark, float weight, int date);
+std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentName, int grade, std::string subjectName);
 
 int main() {
 
@@ -50,6 +53,75 @@ int main() {
 
     return 0;
 }
+
+std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentName, int grade, std::string subjectName) {
+    
+    auto it = std::find_if(subjectsMap[grade][subjectName].begin(),
+        subjectsMap[grade][subjectName].end(),
+        [studentName](auto student) { return student->getName() == studentName; });
+
+    if (it == subjectsMap[grade][subjectName].end()) {
+        return {-1, std::vector<Subject>::iterator()}; // Student does not study this subject
+    }
+
+    auto student = *it; // Shared pointer of student
+    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(),
+        [subjectName](auto sub) { return sub.getName() == subjectName; });
+
+    if (it2 == student->getSubjects().end()) {
+        return {-1, std::vector<Subject>::iterator()}; // No record of test
+    }
+
+    return {0, it2}; // Return valid iterator
+}
+
+
+int addRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, int mark, float weight, int date) {
+    auto it = std::find_if(subjectsMap[grade][subjectName].begin(), subjectsMap[grade][subjectName].end(), [studentName](auto student) {
+        return student->getName() == studentName;
+    });
+
+    if (it == subjectsMap[grade][subjectName].end()) {
+        return -1; // Student does not stude this subject
+    }
+
+    auto student = *it; // Shared pointer of student
+    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subjectName](auto sub) {
+        return sub.getName() == subjectName;
+    });
+
+    if (it2 == student->getSubjects().end()) {
+        return -1; // Student does not have record of writing this test on this subject
+    }
+
+    it2->addRecord(recordName, mark, weight, date);
+
+    return 0;
+}
+
+int removeRecord(std::string studentName, int grade, std::string subjectName, std::string recordName) {
+    auto it = std::find_if(subjectsMap[grade][subjectName].begin(), subjectsMap[grade][subjectName].end(), [studentName](auto student) {
+        return student->getName() == studentName;
+    });
+
+    if (it == subjectsMap[grade][subjectName].end()) {
+        return -1; // Student does not stude this subject
+    }
+
+    auto student = *it; // Shared pointer of student
+    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subjectName](auto sub) {
+        return sub.getName() == subjectName;
+    });
+
+    if (it2 == student->getSubjects().end()) {
+        return -1; // Student does not have record of writing this test on this subject
+    }
+
+    it2->deleteRecord(recordName);
+
+    return 0;
+}
+
 
 // Lets you edit record of a user
 int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, int newMark, float newWeight, int newDate) {
@@ -122,7 +194,7 @@ int loadDataFromFile(std::string filename) {
 }
 
 
- // Splits line on delimiter, returns vector of strings.
+// Splits line on delimiter, returns vector of strings.
 std::vector<std::string> split(const std::string& line, const char& delimiter) {
     std::vector<std::string> output = {};
     std::stringstream ss(line);

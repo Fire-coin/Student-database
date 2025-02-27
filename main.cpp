@@ -39,10 +39,10 @@ int convertDate(const std::string& date); // Convert normal date into program na
 std::string convertDate(int date);
 int loadDataFromFile(std::string filename);
 
-int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, USHORT newMark, float newWeight, int newDate);
+std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentName, int grade, std::string subjectName);
+int editRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, std::string newName, USHORT newMark, float newWeight, int newDate);
 int removeRecord(std::string studentName, int grade, std::string subjectName, std::string recordName);
 int addRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, USHORT mark, float weight, int date);
-std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentName, int grade, std::string subjectName);
 
 int main() {
 
@@ -77,74 +77,34 @@ std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentNa
 
 
 int addRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, int mark, float weight, int date) {
-    auto it = std::find_if(subjectsMap[grade][subjectName].begin(), subjectsMap[grade][subjectName].end(), [studentName](auto student) {
-        return student->getName() == studentName;
-    });
-
-    if (it == subjectsMap[grade][subjectName].end()) {
-        return -1; // Student does not stude this subject
+    auto duo = getSubjects(studentName, grade, subjectName);
+    if (duo.first == -1) {
+        return -1;
     }
 
-    auto student = *it; // Shared pointer of student
-    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subjectName](auto sub) {
-        return sub.getName() == subjectName;
-    });
-
-    if (it2 == student->getSubjects().end()) {
-        return -1; // Student does not have record of writing this test on this subject
-    }
-
-    it2->addRecord(recordName, mark, weight, date);
-
+    duo.second->addRecord(recordName, mark, weight, date);
     return 0;
 }
 
 int removeRecord(std::string studentName, int grade, std::string subjectName, std::string recordName) {
-    auto it = std::find_if(subjectsMap[grade][subjectName].begin(), subjectsMap[grade][subjectName].end(), [studentName](auto student) {
-        return student->getName() == studentName;
-    });
-
-    if (it == subjectsMap[grade][subjectName].end()) {
-        return -1; // Student does not stude this subject
+    auto duo = getSubjects(studentName, grade, subjectName);
+    if (duo.first == -1) {
+        return -1;
     }
 
-    auto student = *it; // Shared pointer of student
-    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subjectName](auto sub) {
-        return sub.getName() == subjectName;
-    });
-
-    if (it2 == student->getSubjects().end()) {
-        return -1; // Student does not have record of writing this test on this subject
-    }
-
-    it2->deleteRecord(recordName);
-
+    duo.second->deleteRecord(recordName);
     return 0;
 }
 
 
 // Lets you edit record of a user
-int editRecord(std::string studentName, int grade, std::string subject, std::string recordName, std::string newName, int newMark, float newWeight, int newDate) {
-    // Finding student in vector
-    auto it = std::find_if(subjectsMap[grade][subject].begin(), subjectsMap[grade][subject].end(), [studentName](auto student) {
-        return student->getName() == studentName;
-    });
-
-    if (it == subjectsMap[grade][subject].end()) {
-        return -1; // Student does not study this subject
+int editRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, std::string newName, int newMark, float newWeight, int newDate) {
+    auto duo = getSubjects(studentName, grade, subjectName);
+    if (duo.first == -1) {
+        return -1;
     }
 
-    auto student = *it;
-    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subject](auto sub) {
-        return sub.getName() == subject;
-    });
-
-    if (it2 == student->getSubjects().end()) {
-        return -1; // Student does not have record of writing this test on this subject
-    }
-
-    it2->changeRecord(newName, newMark, newWeight, newDate); // Editing record
-
+    duo.second->changeRecord(newName, newMark, newWeight, newDate); // Editing record
     return 0;
 }
 

@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <algorithm>
 // #include <emscripten.h>
+#include <utility>
+#include <cstring>
 
 // make permisions possible
 enum class Permition {
@@ -21,7 +23,7 @@ enum class Permition {
 constexpr char USERNAMES[14] = "usernames.txt";
 constexpr char DATA[] = "data.txt";
 constexpr std::pair<int, int> gradeSpan = {1, 13};
-typedef unsigned short int USHORT;
+// typedef unsigned short int USHORT;
 // First key of this map is the grade of student, then there are more maps,
 // and each one's key is the class of student (eg. A, B, C, .etc). The class 
 // is mapped to vector of shared pointers to students. This is done to prevent 
@@ -32,17 +34,17 @@ std::unordered_map<int, std::unordered_map<char, std::vector<std::shared_ptr<Stu
 // this map has key to one's subject (eg. Math, English, .etc). The subject is
 // mapped to a vector of shared pointers to students. This is done to prevent
 // uneccerary iteration each time user wants to see each subject of the grade individually.
-std::unordered_map<int, std::unordered_map<std::string, std::vector<std::shared_ptr<Student>>>> subjectsMap;
+std::unordered_map<int, std::unordered_map<const char*, std::vector<std::shared_ptr<Student>>>> subjectsMap;
 
 std::vector<std::string> split(const std::string& line, const char& delimiter);
-int convertDate(const std::string& date); // Convert normal date into program native one
-std::string convertDate(int date);
-int loadDataFromFile(std::string filename);
+int convertDate(const char* date); // Convert normal date into program native one
+// std::string convertDate(int date);
+int loadDataFromFile(const std::string& filename);
 
-std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentName, int grade, std::string subjectName);
-int editRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, std::string newName, USHORT newMark, float newWeight, int newDate);
-int removeRecord(std::string studentName, int grade, std::string subjectName, std::string recordName);
-int addRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, USHORT mark, float weight, int date);
+std::pair<int, std::vector<Subject>::iterator> getSubjects(const char* studentName, int grade, const char* subjectName);
+int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate);
+int removeRecord(const char* studentName, int grade, const char* subjectName, const char* recordName);
+int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date);
 
 int main() {
 
@@ -53,30 +55,31 @@ int main() {
 
     return 0;
 }
-
-std::pair<int, std::vector<Subject>::iterator> getSubjects(std::string studentName, int grade, std::string subjectName) {
+// extern "C" {
     
+//     // void EMSCRIPTEN_KEEPALIVE getDataOfSubject(const )
+// }
+std::pair<int, std::vector<Subject>::iterator> getSubjects(const char* studentName, int grade, const char* subjectName) {
     auto it = std::find_if(subjectsMap[grade][subjectName].begin(),
-        subjectsMap[grade][subjectName].end(),
-        [studentName](auto student) { return student->getName() == studentName; });
-
+    subjectsMap[grade][subjectName].end(),
+    [studentName](auto student) { return student->getName() == studentName; });
+    
     if (it == subjectsMap[grade][subjectName].end()) {
         return {-1, std::vector<Subject>::iterator()}; // Student does not study this subject
     }
-
+    
     auto student = *it; // Shared pointer of student
     auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(),
-        [subjectName](auto sub) { return sub.getName() == subjectName; });
-
+    [subjectName](auto sub) { return sub.getName() == subjectName; });
+    
     if (it2 == student->getSubjects().end()) {
         return {-1, std::vector<Subject>::iterator()}; // No record of test
     }
-
+    
     return {0, it2}; // Return valid iterator
 }
 
-
-int addRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, int mark, float weight, int date) {
+int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date) {
     auto duo = getSubjects(studentName, grade, subjectName);
     if (duo.first == -1) {
         return -1;
@@ -86,7 +89,8 @@ int addRecord(std::string studentName, int grade, std::string subjectName, std::
     return 0;
 }
 
-int removeRecord(std::string studentName, int grade, std::string subjectName, std::string recordName) {
+
+int removeRecord(const char* studentName, int grade, const char* subjectName, const char* recordName) {
     auto duo = getSubjects(studentName, grade, subjectName);
     if (duo.first == -1) {
         return -1;
@@ -98,19 +102,19 @@ int removeRecord(std::string studentName, int grade, std::string subjectName, st
 
 
 // Lets you edit record of a user
-int editRecord(std::string studentName, int grade, std::string subjectName, std::string recordName, std::string newName, int newMark, float newWeight, int newDate) {
+int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate) {
     auto duo = getSubjects(studentName, grade, subjectName);
     if (duo.first == -1) {
         return -1;
     }
 
-    duo.second->changeRecord(newName, newMark, newWeight, newDate); // Editing record
+    duo.second->changeRecord(recordName, newName, newMark, newWeight, newDate); // Editing record
     return 0;
 }
 
 // Loads student data from specified file. Stores it into
 // global maps: classesMap & subjectsMap.
-int loadDataFromFile(std::string filename) {
+int loadDataFromFile(const std::string& filename) {
     std::ifstream fin(filename);
     if (fin.is_open()) {
         // Contains all details of student like name, grade,
@@ -128,13 +132,14 @@ int loadDataFromFile(std::string filename) {
             arguments = split(line, ',');
             // Creating shared pointer to student to put in maps for faster access
             std::shared_ptr<Student> student = std::make_shared<Student>(arguments[0], std::stoi(arguments[2]), std::stoi(arguments[1]), arguments[3][0]);
-            Subject subject;
+            // Subject subject;
             for (int i = 4; i < arguments.size(); ++i) {
                 records = split(arguments[i], '$');
-                subject.changeName(records[0]); // Changing name of subject
+                Subject subject(records[0].c_str());
+                // subject.changeName(records[0].c_str()); // Changing name of subject
                 for (int j = 1; j < records.size(); ++j) {
                     details = split(records[j], '|');
-                    subject.addRecord(details[0], std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
+                    subject.addRecord(details[0].c_str(), std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
                 }
                 student->addSubject(subject); // Adding subject to student
             }
@@ -153,7 +158,6 @@ int loadDataFromFile(std::string filename) {
     return 0;
 }
 
-
 // Splits line on delimiter, returns vector of strings.
 std::vector<std::string> split(const std::string& line, const char& delimiter) {
     std::vector<std::string> output = {};
@@ -167,7 +171,7 @@ std::vector<std::string> split(const std::string& line, const char& delimiter) {
 
 // Converts date from format DD/MM/YYYY into
 // amount of days passed since Jan 1 2000.
-int convertDate(const std::string& dateStr) {
+int convertDate(const char* dateStr) {
     std::tm tm = {};
     std::istringstream ss(dateStr);
     

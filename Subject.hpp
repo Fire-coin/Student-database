@@ -1,7 +1,6 @@
 #ifndef SUBJECT_HPP
 #define SUBJECT_HPP
 
-#include <string>
 #include <vector>
 
 typedef unsigned short int USHORT;

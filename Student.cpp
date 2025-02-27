@@ -1,60 +1,54 @@
 #include "Student.hpp"
 #include <iostream>
-#include <cstring>
 
 Student::Student() {
     studentCount++;
-    this->fullName     = new char[1];
+    this->fullName     = "";
     this->ID           = studentCount;
     this->grade        = -1;
     this->subjects     = {};
     this->studentClass = 'A';
 }
 
-Student::Student(const char* fullName, USHORT grade) {
+Student::Student(std::string fullName, USHORT grade) {
     studentCount++;
-    this->fullName     = new char[strlen(fullName) + 1];
-    strcpy(this->fullName, fullName);
+    this->fullName     = fullName;
     this->ID           = studentCount;
     this->grade        = grade;
     this->subjects     = {};
     this->studentClass = 'A';
 }
 
-Student::Student(const char* fullName, USHORT grade, unsigned int id) {
+Student::Student(std::string fullName, USHORT grade, unsigned int id) {
     studentCount++;
-    this->fullName     = new char[strlen(fullName) + 1];
-    strcpy(this->fullName, fullName);
+    this->fullName     = fullName;
     this->ID           = id;
     this->grade        = grade;
     this->subjects     = {};
     this->studentClass = 'A';
 }
 
-Student::Student(const char* fullName, USHORT grade, unsigned int id, char studentClass) {
+Student::Student(std::string fullName, USHORT grade, unsigned int id, char studentClass) {
     studentCount++;
-    this->fullName     = new char[strlen(fullName) + 1];
-    strcpy(this->fullName, fullName);
+    this->fullName     = fullName;
     this->ID           = id;
     this->grade        = grade;
     this->subjects     = {};
     this->studentClass = studentClass;
 }
 
-Student::Student(const char* fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id) {
+Student::Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id) {
     studentCount++;
-    this->fullName     = new char[strlen(fullName) + 1];
-    strcpy(this->fullName, fullName);
+    this->fullName     = fullName;
     this->ID           = id;
     this->grade        = grade;
     this->subjects     = subjects;
     this->studentClass = 'A';
 }
 
-Student::Student(const char* fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id, char studentClass) {
+Student::Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id, char studentClass) {
     studentCount++;
-    this->fullName     = new char[strlen(fullName) + 1];
-    strcpy(this->fullName, fullName);
+    this->fullName     = fullName;
     this->ID           = id;
     this->grade        = grade;
     this->subjects     = subjects;
@@ -62,7 +56,7 @@ Student::Student(const char* fullName, USHORT grade, std::vector<Subject> subjec
 }
 
 
-char* Student::getName() {
+std::string Student::getName() {
     return this->fullName;
 }
 
@@ -90,10 +84,8 @@ void Student::setSubjects(std::vector<Subject> newSubjects) {
     this->subjects = newSubjects;
 }
 
-void Student::setName(const char* newName) {
-    delete[] this->fullName;
-    this->fullName = new char[strlen(newName) + 1];
-    strcpy(this->fullName, newName);
+void Student::setName(std::string newName) {
+    this->fullName = newName;
 }
 
 void Student::setGrade(USHORT newGrade) {
@@ -106,14 +98,6 @@ void Student::setID(unsigned int newID) {
 
 void Student::setClass(char newClass) {
     this->studentClass = newClass;
-}
-
-Student::~Student() {
-    delete[] this->fullName;
-    for (Subject& s : this->subjects) {
-        s.~Subject();
-    }
-    this->subjects.clear();
 }
 
 int Student::studentCount = 0;

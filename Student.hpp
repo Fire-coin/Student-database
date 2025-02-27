@@ -1,6 +1,7 @@
 #ifndef STUDENT_HPP
 #define STUDENT_HPP
 
+#include <string>
 #include <vector>
 #include "Subject.hpp"
 
@@ -9,7 +10,7 @@ typedef unsigned short int USHORT;
 class Student {
     private:
         unsigned int ID;
-        char* fullName;
+        std::string fullName;
         USHORT grade;
         std::vector<Subject> subjects;
         char studentClass;
@@ -17,15 +18,14 @@ class Student {
         static int studentCount;
         // Constructors
         Student();
-        Student(const char* fullName, USHORT grade);
-        Student(const char* fullName, USHORT grade, unsigned int id);
-        Student(const char* fullName, USHORT grade, unsigned int id, char studentClass);
-        Student(const char* fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id);
-        Student(const char* fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id, char studentClass);
-        ~Student();
+        Student(std::string fullName, USHORT grade);
+        Student(std::string fullName, USHORT grade, unsigned int id);
+        Student(std::string fullName, USHORT grade, unsigned int id, char studentClass);
+        Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id);
+        Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id, char studentClass);
 
         // Accesing functions
-        char* getName();
+        std::string getName();
         USHORT getGrade();
         unsigned int getID();
         std::vector<Subject> getSubjects();
@@ -34,7 +34,7 @@ class Student {
         // Setting functions
         void addSubject(Subject newSubject);
         void setSubjects(std::vector<Subject> newSubjects);
-        void setName(const char* newName);
+        void setName(std::string newName);
         void setGrade(USHORT newGrade);
         void setID(unsigned int newID);
         void setClass(char newClass);

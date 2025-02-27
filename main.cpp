@@ -34,7 +34,7 @@ std::unordered_map<int, std::unordered_map<char, std::vector<std::shared_ptr<Stu
 // this map has key to one's subject (eg. Math, English, .etc). The subject is
 // mapped to a vector of shared pointers to students. This is done to prevent
 // uneccerary iteration each time user wants to see each subject of the grade individually.
-std::unordered_map<int, std::unordered_map<const char*, std::vector<std::shared_ptr<Student>>>> subjectsMap;
+std::unordered_map<int, std::unordered_map<std::string, std::vector<std::shared_ptr<Student>>>> subjectsMap;
 
 std::vector<std::string> split(const std::string& line, const char& delimiter);
 int convertDate(const char* date); // Convert normal date into program native one
@@ -132,14 +132,13 @@ int loadDataFromFile(const std::string& filename) {
             arguments = split(line, ',');
             // Creating shared pointer to student to put in maps for faster access
             std::shared_ptr<Student> student = std::make_shared<Student>(arguments[0], std::stoi(arguments[2]), std::stoi(arguments[1]), arguments[3][0]);
-            // Subject subject;
+            Subject subject;
             for (int i = 4; i < arguments.size(); ++i) {
                 records = split(arguments[i], '$');
-                Subject subject(records[0].c_str());
-                // subject.changeName(records[0].c_str()); // Changing name of subject
+                subject.changeName(records[0].c_str()); // Changing name of subject
                 for (int j = 1; j < records.size(); ++j) {
                     details = split(records[j], '|');
-                    subject.addRecord(details[0].c_str(), std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
+                    subject.addRecord(details[0], std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
                 }
                 student->addSubject(subject); // Adding subject to student
             }

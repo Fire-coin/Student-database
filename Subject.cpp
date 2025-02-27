@@ -1,6 +1,7 @@
 #include "Subject.hpp"
 #include <iostream>
 #include <algorithm>
+#include <cstring>
 
 
 void sortTests(std::vector<Record>& records) {
@@ -14,21 +15,23 @@ Subject::Subject() {
     this->records = {};
 }
 
-Subject::Subject(std::string name) {
-    this->subjectName = name;
+Subject::Subject(const char* name) {
+    this->subjectName = new char[strlen(name) + 1];
+    strcpy(this->subjectName, name);
     this->records = {};
 }
 
-Subject::Subject(std::string name, std::vector<Record> records) {
+Subject::Subject(const char* name, std::vector<Record> records) {
+    this->subjectName = new char[strlen(name) + 1];
+    strcpy(this->subjectName, name);
     this->records = records;
-    this->subjectName = name;
 }
 
 std::vector<Record> Subject::getRecords() {
     return this->records;
 }
 
-std::string Subject::getName() {
+char* Subject::getName() {
     return this->subjectName;
 }
 
@@ -37,9 +40,10 @@ void Subject::addRecord(Record newRecord) {
     sortTests(this->records);
 }
 
-void Subject::addRecord(std::string name, USHORT mark, float weight, int date) {
+void Subject::addRecord(const char* name, USHORT mark, float weight, int date) {
     Record r;
-    r.name = name;
+    r.name = new char[strlen(name) + 1];
+    strcpy(r.name, name);
     r.mark = mark;
     r.weight = weight;
     r.date = date;
@@ -50,13 +54,18 @@ void Subject::setRecords(std::vector<Record> newRecords) {
     this->records = newRecords;
 }
 
-void Subject::changeRecord(std::string name, USHORT newMark, float newWeight, int newDate) {
+void Subject::changeRecord(const char* name, const char* newName, USHORT newMark, float newWeight, int newDate) {
     auto it = std::find_if(this->records.begin(), this->records.end(), [this, name](auto& record) {
         return record.name == name;
     });
     if (it == this->records.end()) {
-        throw std::runtime_error("No record with name: " + name);
+        throw std::runtime_error("No record with name: " + *name);
     } else {
+        if (strcmp(name, newName) != 0) {
+            delete[] it->name;
+            it->name = new char[strlen(newName) + 1];
+            strcpy(it->name, newName);
+        }
         it->mark = newMark;
         it->weight = newWeight;
         it->date = newDate;
@@ -64,29 +73,42 @@ void Subject::changeRecord(std::string name, USHORT newMark, float newWeight, in
     sortTests(this->records);
 }
 
-void Subject::changeRecord(std::string name, Record newRecord) {
+void Subject::changeRecord(const char* name, Record newRecord) {
     auto it = std::find_if(this->records.begin(), this->records.end(), [this, name](auto& record) {
         return record.name == name;
     });
     if (it == this->records.end()) {
-        throw std::runtime_error("No record with name: " + name);
+        throw std::runtime_error("No record with name: " + *name);
     } else {
+        delete[] it->name;
         *it = newRecord;
     }
     sortTests(this->records);
 }
 
-void Subject::deleteRecord(std::string name) {
+void Subject::deleteRecord(const char* name) {
     auto it = std::find_if(this->records.begin(), this->records.end(), [this, name](auto& record) {
         return record.name == name;
     });
     if (it == this->records.end()) {
-        throw std::runtime_error("No record with name: " + name);
+        throw std::runtime_error("No record with name: " + *name);
     } else {
+        delete[] it->name;
         records.erase(it);
     }
 }
 
-void Subject::changeName(std::string newName) {
-    this->subjectName = newName;
+void Subject::changeName(const char* newName) {
+    delete[] this->subjectName;
+    this->subjectName = new char[strlen(newName + 1)];
+    strcpy(this->subjectName, newName);
+}
+
+Subject::~Subject() {
+    delete[] this->subjectName;
+
+    for (Record& r : this->records) {
+        delete[] r.name;
+    }
+    this->records.clear();
 }

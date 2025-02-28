@@ -37,7 +37,7 @@ Student::Student(std::string fullName, USHORT grade, unsigned int id, char stude
     this->studentClass = studentClass;
 }
 
-Student::Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id) {
+Student::Student(std::string fullName, USHORT grade, std::unordered_map<std::string, Subject> subjects, unsigned int id) {
     studentCount++;
     this->fullName     = fullName;
     this->ID           = id;
@@ -46,7 +46,7 @@ Student::Student(std::string fullName, USHORT grade, std::vector<Subject> subjec
     this->studentClass = 'A';
 }
 
-Student::Student(std::string fullName, USHORT grade, std::vector<Subject> subjects, unsigned int id, char studentClass) {
+Student::Student(std::string fullName, USHORT grade, std::unordered_map<std::string, Subject> subjects, unsigned int id, char studentClass) {
     studentCount++;
     this->fullName     = fullName;
     this->ID           = id;
@@ -68,19 +68,33 @@ unsigned int Student::getID() {
     return this->ID;
 }
 
-std::vector<Subject> Student::getSubjects() {
-    return this->subjects;
+std::unordered_map<std::string, Subject>::iterator Student::getSubjectsStart() {
+    return this->subjects.begin();
 }
+
+std::unordered_map<std::string, Subject>::iterator Student::getSubjectsEnd() {
+    return this->subjects.end();
+}
+
+
+Subject& Student::getSubject(std::string subjectName) {
+    static Subject defaultSubject;
+    if (this->subjects.find(subjectName) != this->subjects.end()) 
+        return this->subjects[subjectName];
+    else
+        return defaultSubject;
+}
+
 
 char Student::getClass() {
     return this->studentClass;
 }
 
-void Student::addSubject(Subject newSubject) {
-    this->subjects.push_back(newSubject);
+void Student::addSubject(std::string subjectName, Subject newSubject) {
+    this->subjects[subjectName] = newSubject;
 }
 
-void Student::setSubjects(std::vector<Subject> newSubjects) {
+void Student::setSubjects(std::unordered_map<std::string, Subject> newSubjects) {
     this->subjects = newSubjects;
 }
 

@@ -17,16 +17,16 @@ struct Record {
 
 class Subject {
     private:
-        std::string subjectName;
+        // std::string subjectName;
         std::vector<Record> records;
     public:
         Subject();
-        Subject(std::string name);
-        Subject(std::string name, std::vector<Record> records);
+        // Subject(std::string name);
+        Subject(std::vector<Record> records);
 
         // Getting function
         const std::vector<Record>& getRecords();
-        std::string getName();
+        // std::string getName();
 
         // Setting functions
         void addRecord(Record newRecord);
@@ -35,7 +35,7 @@ class Subject {
         void changeRecord(std::string name, std::string newName, USHORT newMark, float newWeight, int newDate);
         void changeRecord(std::string name, Record newRecord);
         void deleteRecord(std::string name);
-        void changeName(std::string newName);
+        // void changeName(std::string newName);
 };
 
 #endif

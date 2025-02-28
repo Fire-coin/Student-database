@@ -10,27 +10,27 @@ void sortTests(std::vector<Record>& records) {
 }
 
 Subject::Subject() {
-    this->subjectName = "None";
+    // this->subjectName = "None";
     this->records = {};
 }
 
-Subject::Subject(std::string name) {
-    this->subjectName = name;
-    this->records = {};
-}
+// Subject::Subject(std::string name) {
+//     // this->subjectName = name;
+//     this->records = {};
+// }
 
-Subject::Subject(std::string name, std::vector<Record> records) {
+Subject::Subject(std::vector<Record> records) {
     this->records = records;
-    this->subjectName = name;
+    // this->subjectName = name;
 }
 
 const std::vector<Record>& Subject::getRecords() {
     return this->records;
 }
 
-std::string Subject::getName() {
-    return this->subjectName;
-}
+// std::string Subject::getName() {
+//     return this->subjectName;
+// }
 
 void Subject::addRecord(Record newRecord) {
     this->records.push_back(newRecord);
@@ -88,6 +88,6 @@ void Subject::deleteRecord(std::string name) {
     }
 }
 
-void Subject::changeName(std::string newName) {
-    this->subjectName = newName;
-}
+// void Subject::changeName(std::string newName) {
+//     this->subjectName = newName;
+// }

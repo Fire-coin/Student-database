@@ -48,6 +48,7 @@ int addRecord(const char* studentName, int grade, const char* subjectName, const
 
 int getSubjectData(const char* subjectName, int grade, const char* filename);
 int getClassData(const char className, int grade, const char* filename);
+int getStudentData(const char className, int grade, const char* studentName, const char* filename);
 
 int main() {
 
@@ -68,11 +69,35 @@ int main() {
     //         }
     //     }
     // }
-    success = getClassData('A', 10, "classData.txt");
+    success = getStudentData('C', 10, "Sophia Martinez", "SophiaData.txt");
     if (success == 0) {
         std::cout << "Subject data written successfully\n";
     }
 
+    return 0;
+}
+
+
+int getStudentData(const char className, int grade, const char* studentName, const char* filename) {
+    std::ofstream outFile(filename);
+    if (outFile.is_open()) {
+        auto student = std::find_if(classesMap[grade][className].begin(), classesMap[grade][className].end(), [studentName](std::shared_ptr<Student> stud) {
+            return std::strcmp(stud->getName().c_str(), studentName) == 0;
+        });
+        outFile << (*student)->getName() << ',' << (*student)->getID();
+        for (auto subject = (*student)->getSubjectsStart(); subject != (*student)->getSubjectsEnd(); ++subject) {
+            outFile << ',' << subject->first;
+            for (const Record& record : subject->second.getRecords()) {
+                outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+            }
+            outFile << '$';
+        }
+        outFile << '\n';
+    } else {
+        return -1; // Could not open file
+    }
+
+    outFile.close();
     return 0;
 }
 
@@ -92,7 +117,7 @@ int getClassData(const char className, int grade, const char* filename) {
             outFile << '\n';
         }
     } else {
-        return -1;
+        return -1; // Could not open file
     }
     outFile.close();
     return 0;

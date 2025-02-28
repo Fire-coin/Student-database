@@ -21,10 +21,11 @@ enum class Permition {
     teacher,
     student
 };
-constexpr char USERNAMES[14] = "usernames.txt";
-constexpr char DATA[] = "data.txt";
-constexpr std::pair<int, int> gradeSpan = {1, 13};
+// constexpr char USERNAMES[14] = "usernames.txt";
+// constexpr char DATA[] = "data.txt";
+// constexpr std::pair<int, int> gradeSpan = {1, 13};
 // typedef unsigned short int USHORT;
+
 // First key of this map is the grade of student, then there are more maps,
 // and each one's key is the class of student (eg. A, B, C, .etc). The class 
 // is mapped to vector of shared pointers to students. This is done to prevent 
@@ -53,10 +54,10 @@ int getStudentData(const char className, int grade, const char* studentName, con
 
 int main() {
 
-    int success = loadDataFromFile(DATA);
-    if (success == 0) {
-        std::cout << "Data loaded successfully\n";
-    }
+    // int success = loadDataFromFile(DATA);
+    // if (success == 0) {
+    //     std::cout << "Data loaded successfully\n";
+    // }
 
     // for (auto i : subjectsMap) {
     //     std::cout << i.first << '\n';
@@ -70,25 +71,26 @@ int main() {
     //         }
     //     }
     // }
-    success = getSubjectData("Meth", 10, "subjectData.txt");
-    if (success == 0) {
-        std::cout << "Subject data written successfully\n";
-    }
+    // success = getSubjectData("Meth", 10, "subjectData.txt");
+    // if (success == 0) {
+    //     std::cout << "Subject data written successfully\n";
+    // }
 
-    success = getClassData('B', 10, "classData.txt");
-    if (success == 0) {
-        std::cout << "Class data written successfully\n";
-    }
+    // success = getClassData('B', 10, "classData.txt");
+    // if (success == 0) {
+    //     std::cout << "Class data written successfully\n";
+    // }
+    // editRecord("Sophia Martinez", 10, "Math", "Final Exam", "Final Exam", 34, 3.0f, 950);
 
-    success = getStudentData('C', 10, "Sophia Martinez", "SophiaData.txt");
-    if (success == 0) {
-        std::cout << "Student data written successfully\n";
-    }
+    // success = getStudentData('C', 10, "Sophia Martinez", "SophiaData.txt");
+    // if (success == 0) {
+    //     std::cout << "Student data written successfully\n";
+    // }
 
     return 0;
 }
 
-
+// <<Tranfering function>>
 int getStudentData(const char className, int grade, const char* studentName, const char* filename) {
     std::ofstream outFile(filename);
     if (outFile.is_open()) {
@@ -116,7 +118,7 @@ int getStudentData(const char className, int grade, const char* studentName, con
     return 0;
 }
 
-
+// <<Tranfering function>>
 int getClassData(const char className, int grade, const char* filename) {
     std::ofstream outFile(filename);
     if (outFile.is_open()) {
@@ -143,7 +145,7 @@ int getClassData(const char className, int grade, const char* filename) {
 }
 
 
-
+// <<Tranfering function>>
 int getSubjectData(const char* subjectName, int grade, const char* filename) {
     std::ofstream outFile(filename);
     if (outFile.is_open()) {
@@ -172,10 +174,11 @@ int getSubjectData(const char* subjectName, int grade, const char* filename) {
 //     // void EMSCRIPTEN_KEEPALIVE getDataOfSubject(const )
 // }
 
+// <<Tranfering function>>
 Subject* getSubjects(const char* studentName, int grade, const char* subjectName) {
     auto it = std::find_if(subjectsMap[grade][subjectName].begin(),
     subjectsMap[grade][subjectName].end(), [studentName](std::shared_ptr<Student> student) {
-        return student->getName().c_str() == studentName;
+        return std::strcmp(student->getName().c_str(), studentName) == 0;
     });
     
     if (it == subjectsMap[grade][subjectName].end()) {
@@ -185,7 +188,7 @@ Subject* getSubjects(const char* studentName, int grade, const char* subjectName
     return &(*it)->getSubject(subjectName);
 }
 
-
+// <<Tranfering function>>
 int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date) {
     Subject* sub = getSubjects(studentName, grade, subjectName);
     if (sub) {
@@ -195,7 +198,7 @@ int addRecord(const char* studentName, int grade, const char* subjectName, const
     return -1;
 }
 
-
+// <<Tranfering function>>
 int removeRecord(const char* studentName, int grade, const char* subjectName, const char* recordName) {
     Subject* sub = getSubjects(studentName, grade, subjectName);
     if (sub) {
@@ -205,6 +208,7 @@ int removeRecord(const char* studentName, int grade, const char* subjectName, co
     return -1;
 }
 
+// <<Tranfering function>>
 // Lets you edit record of a user
 int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate) {
     Subject* sub = getSubjects(studentName, grade, subjectName);
@@ -215,6 +219,7 @@ int editRecord(const char* studentName, int grade, const char* subjectName, cons
     return -1;
 }
 
+// <<Tranfering function>>
 // Loads student data from specified file. Stores it into
 // global maps: classesMap & subjectsMap.
 int loadDataFromFile(const std::string& filename) {
@@ -252,7 +257,7 @@ int loadDataFromFile(const std::string& filename) {
             }
         }
     } else {
-        std::cerr << "Could not open file " << DATA << '\n';
+        std::cerr << "Could not open file " << filename << '\n';
         return -1;
     }
 
@@ -270,6 +275,7 @@ std::vector<std::string> split(const std::string& line, const char& delimiter) {
     return output;
 }
 
+// <<Tranfering function>>
 // Converts date from format DD/MM/YYYY into
 // amount of days passed since Jan 1 2000.
 int convertDate(const char* dateStr) {

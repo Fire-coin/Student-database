@@ -22,7 +22,7 @@ enum class Permition {
     student
 };
 // constexpr char USERNAMES[14] = "usernames.txt";
-// constexpr char DATA[] = "data.txt";
+constexpr char DATA[] = "data.txt";
 // constexpr std::pair<int, int> gradeSpan = {1, 13};
 // typedef unsigned short int USHORT;
 
@@ -41,7 +41,8 @@ std::unordered_map<int, std::unordered_map<std::string, std::vector<std::shared_
 std::vector<std::string> split(const std::string& line, const char& delimiter);
 int convertDate(const char* date); // Convert normal date into program native one
 // std::string convertDate(int date);
-int loadDataFromFile(const std::string& filename);
+int loadDataFromFile(const char* filename);
+int exportDataToFile(const char* filename);
 
 Subject* getSubjects(const char* studentName, int grade, const char* subjectName);
 int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate);
@@ -53,11 +54,14 @@ int getClassData(const char className, int grade, const char* filename);
 int getStudentData(const char className, int grade, const char* studentName, const char* filename);
 
 int main() {
-
-    // int success = loadDataFromFile(DATA);
-    // if (success == 0) {
-    //     std::cout << "Data loaded successfully\n";
-    // }
+    int success = loadDataFromFile(DATA);
+    if (success == 0) {
+        std::cout << "Data loaded successfully\n";
+    }
+    success = exportDataToFile("newData.txt");
+    if (success == 0) {
+        std::cout << "Data exported successfully\n";
+    }
 
     // for (auto i : subjectsMap) {
     //     std::cout << i.first << '\n';
@@ -89,6 +93,24 @@ int main() {
 
     return 0;
 }
+
+//TODO finish later
+int exportDataToFile(const char* filename) {
+    std::ofstream fon(filename);
+    if (fon.is_open()) {
+        for (auto grade : classesMap) {
+            std::cout << grade.first << '\n';
+            for (auto studentClass : grade.second) {
+                std::cout << studentClass.first << '\n';
+
+            }
+        }
+    } else {
+        return -1; // Could not open file
+    }
+    return 0;
+}
+
 
 // <<Tranfering function>>
 int getStudentData(const char className, int grade, const char* studentName, const char* filename) {
@@ -222,7 +244,7 @@ int editRecord(const char* studentName, int grade, const char* subjectName, cons
 // <<Tranfering function>>
 // Loads student data from specified file. Stores it into
 // global maps: classesMap & subjectsMap.
-int loadDataFromFile(const std::string& filename) {
+int loadDataFromFile(const char* filename) {
     std::ifstream fin(filename);
     if (fin.is_open()) {
         // Contains all details of student like name, grade,

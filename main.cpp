@@ -41,10 +41,29 @@ int convertDate(const char* date); // Convert normal date into program native on
 // std::string convertDate(int date);
 int loadDataFromFile(const std::string& filename);
 
-std::pair<int, std::vector<Subject>::iterator> getSubjects(const char* studentName, int grade, const char* subjectName);
+Subject* getSubjects(const char* studentName, int grade, const char* subjectName);
 int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate);
 int removeRecord(const char* studentName, int grade, const char* subjectName, const char* recordName);
 int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date);
+
+int getSubjectData(const char* subjectName, int grade, const char* filename) {
+    std::ofstream outFile(filename);
+    if (outFile.is_open()) {
+        for (auto student = subjectsMap[grade][subjectName].begin(); student != subjectsMap[grade][subjectName].end(); ++student) {
+            Subject& subject = (*student)->getSubject(subjectName);
+            outFile << (*student)->getName() << ',' << (*student)->getID() << ',';
+            for (const Record record : subject.getRecords()) {
+                outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+            }
+            outFile << "$\n";
+        }
+    } else {
+        return -1; // Could not open file
+    }
+    outFile.close();
+
+    return 0;
+}
 
 int main() {
 
@@ -53,63 +72,96 @@ int main() {
         std::cout << "Data loaded successfully\n";
     }
 
+    // for (auto i : subjectsMap) {
+    //     std::cout << i.first << '\n';
+    //     for (auto j : i.second) {
+    //         std::cout << j.first << '\n';
+    //         for (auto k : j.second) {
+    //             std::cout << k->getName() << ' ' << k->getID() << ' ' << k->getClass() << '\n';
+    //             for (auto h : k->getSubject(j.first).getRecords()) {
+    //                 std::cout << h.name << ' ' << h.mark << '\n';
+    //             }
+    //         }
+    //     }
+    // }
+    success = getSubjectData("Meth", 10, "subjectData.txt");
+    if (success == 0) {
+        std::cout << "Subject data written successfully\n";
+    }
+
     return 0;
 }
 // extern "C" {
     
 //     // void EMSCRIPTEN_KEEPALIVE getDataOfSubject(const )
 // }
-std::pair<int, std::vector<Subject>::iterator> getSubjects(const char* studentName, int grade, const char* subjectName) {
+
+Subject* getSubjects(const char* studentName, int grade, const char* subjectName) {
+    // Subject& sub = Subject();
     auto it = std::find_if(subjectsMap[grade][subjectName].begin(),
-    subjectsMap[grade][subjectName].end(),
-    [studentName](auto student) { return student->getName() == studentName; });
+    subjectsMap[grade][subjectName].end(), [studentName](std::shared_ptr<Student> student) {
+        return student->getName().c_str() == studentName;
+    });
     
     if (it == subjectsMap[grade][subjectName].end()) {
-        return {-1, std::vector<Subject>::iterator()}; // Student does not study this subject
+        return nullptr; // Student does not study this subject
     }
     
-    auto student = *it; // Shared pointer of student
-    auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(),
-    [subjectName](auto sub) { return sub.getName() == subjectName; });
+    // auto student = *it; // Shared pointer of student
+    // auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subjectName](Subject sub) {
+    //     return sub.getName().c_str() == subjectName; 
+    // });
+    // Subject& sub = (*it)->getSubject(subjectName);
+    // if (sub == Subject()) {
+    //     return 
+    // }
+    // if (it2 == student->getSubjects().end()) {
+    //     return {-1, std::vector<Subject>::iterator()}; // No record of test
+    // }
     
-    if (it2 == student->getSubjects().end()) {
-        return {-1, std::vector<Subject>::iterator()}; // No record of test
-    }
-    
-    return {0, it2}; // Return valid iterator
+    return &(*it)->getSubject(subjectName);
 }
 
 int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date) {
-    auto duo = getSubjects(studentName, grade, subjectName);
-    if (duo.first == -1) {
-        return -1;
+    Subject* sub = getSubjects(studentName, grade, subjectName);
+    if (sub) {
+        sub->addRecord(recordName, mark, weight, date);
+        return 0;
     }
+    return -1;
+    // if (duo.first == -1) {
+    //     return -1;
+    // }
 
-    duo.second->addRecord(recordName, mark, weight, date);
-    return 0;
 }
 
 
 int removeRecord(const char* studentName, int grade, const char* subjectName, const char* recordName) {
-    auto duo = getSubjects(studentName, grade, subjectName);
-    if (duo.first == -1) {
-        return -1;
+    Subject* sub = getSubjects(studentName, grade, subjectName);
+    if (sub) {
+        sub->deleteRecord(recordName);
+        return 0;
     }
+    return -1;
+    // if (duo.first == -1) {
+    //     return -1;
+    // }
 
-    duo.second->deleteRecord(recordName);
-    return 0;
 }
 
 
 // Lets you edit record of a user
 int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate) {
-    auto duo = getSubjects(studentName, grade, subjectName);
-    if (duo.first == -1) {
-        return -1;
+    Subject* sub = getSubjects(studentName, grade, subjectName);
+    if (sub) {
+        sub->changeRecord(recordName, newName, newMark, newWeight, newDate); // Editing record
+        return 0;
     }
+    return -1;
+    //     if (duo.first == -1) {
+    //     return -1;
+    // }
 
-    duo.second->changeRecord(recordName, newName, newMark, newWeight, newDate); // Editing record
-    return 0;
 }
 
 // Loads student data from specified file. Stores it into
@@ -132,22 +184,30 @@ int loadDataFromFile(const std::string& filename) {
             arguments = split(line, ',');
             // Creating shared pointer to student to put in maps for faster access
             std::shared_ptr<Student> student = std::make_shared<Student>(arguments[0], std::stoi(arguments[2]), std::stoi(arguments[1]), arguments[3][0]);
-            Subject subject;
             for (int i = 4; i < arguments.size(); ++i) {
                 records = split(arguments[i], '$');
-                subject.changeName(records[0].c_str()); // Changing name of subject
+                Subject subject = Subject();
+                // subject.changeName(records[0].c_str()); // Changing name of subject
                 for (int j = 1; j < records.size(); ++j) {
                     details = split(records[j], '|');
                     subject.addRecord(details[0], std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
                 }
-                student->addSubject(subject); // Adding subject to student
+                student->addSubject(records[0], subject); // Adding subject to student
+                
+                // for (const auto& o : subject.getRecords()) {
+                //     std::cout << o.name << '\n';
+                // }
             }
             // Adding student into one's class
             classesMap[student->getGrade()][student->getClass()].push_back(student);
-            for (auto sub : student->getSubjects()) {
-                // Adding student into one's subjects
-                subjectsMap[student->getGrade()][sub.getName()].push_back(student);
+            for (auto sub = student->getSubjectsStart(); sub != student->getSubjectsEnd(); ++sub) {
+                // std::cout << "here\n";
+                subjectsMap[student->getGrade()][sub->first].push_back(student);
             }
+            // for (auto subName : student->getSubjects()) {
+            //     // Adding student into one's subjects
+            //     subjectsMap[student->getGrade()][student->getSubject(subName)].push_back(student);
+            // }
         }
     } else {
         std::cerr << "Could not open file " << DATA << '\n';

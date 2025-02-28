@@ -25,7 +25,7 @@ class Subject {
         Subject(std::string name, std::vector<Record> records);
 
         // Getting function
-        std::vector<Record> getRecords();
+        const std::vector<Record>& getRecords();
         std::string getName();
 
         // Setting functions

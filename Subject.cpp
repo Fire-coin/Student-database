@@ -24,7 +24,7 @@ Subject::Subject(std::string name, std::vector<Record> records) {
     this->subjectName = name;
 }
 
-std::vector<Record> Subject::getRecords() {
+const std::vector<Record>& Subject::getRecords() {
     return this->records;
 }
 

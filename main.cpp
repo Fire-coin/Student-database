@@ -46,24 +46,8 @@ int editRecord(const char* studentName, int grade, const char* subjectName, cons
 int removeRecord(const char* studentName, int grade, const char* subjectName, const char* recordName);
 int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date);
 
-int getSubjectData(const char* subjectName, int grade, const char* filename) {
-    std::ofstream outFile(filename);
-    if (outFile.is_open()) {
-        for (auto student = subjectsMap[grade][subjectName].begin(); student != subjectsMap[grade][subjectName].end(); ++student) {
-            Subject& subject = (*student)->getSubject(subjectName);
-            outFile << (*student)->getName() << ',' << (*student)->getID() << ',';
-            for (const Record record : subject.getRecords()) {
-                outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
-            }
-            outFile << "$\n";
-        }
-    } else {
-        return -1; // Could not open file
-    }
-    outFile.close();
-
-    return 0;
-}
+int getSubjectData(const char* subjectName, int grade, const char* filename);
+int getClassData(const char className, int grade, const char* filename);
 
 int main() {
 
@@ -84,13 +68,57 @@ int main() {
     //         }
     //     }
     // }
-    success = getSubjectData("Meth", 10, "subjectData.txt");
+    success = getClassData('A', 10, "classData.txt");
     if (success == 0) {
         std::cout << "Subject data written successfully\n";
     }
 
     return 0;
 }
+
+
+int getClassData(const char className, int grade, const char* filename) {
+    std::ofstream outFile(filename);
+    if (outFile.is_open()) {
+        for (auto student = classesMap[grade][className].begin(); student != classesMap[grade][className].end(); ++student) {
+            outFile << (*student)->getName() << ',' << (*student)->getID();
+            for (auto subject = (*student)->getSubjectsStart(); subject != (*student)->getSubjectsEnd(); ++subject) {
+                outFile << ',' << subject->first;
+                for (const Record& record : subject->second.getRecords()) {
+                    outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+                }
+                outFile << '$';
+            }
+            outFile << '\n';
+        }
+    } else {
+        return -1;
+    }
+    outFile.close();
+    return 0;
+}
+
+
+
+int getSubjectData(const char* subjectName, int grade, const char* filename) {
+    std::ofstream outFile(filename);
+    if (outFile.is_open()) {
+        for (auto student = subjectsMap[grade][subjectName].begin(); student != subjectsMap[grade][subjectName].end(); ++student) {
+            Subject& subject = (*student)->getSubject(subjectName);
+            outFile << (*student)->getName() << ',' << (*student)->getID() << ',';
+            for (const Record& record : subject.getRecords()) {
+                outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+            }
+            outFile << "$\n";
+        }
+    } else {
+        return -1; // Could not open file
+    }
+    outFile.close();
+
+    return 0;
+}
+
 // extern "C" {
     
 //     // void EMSCRIPTEN_KEEPALIVE getDataOfSubject(const )

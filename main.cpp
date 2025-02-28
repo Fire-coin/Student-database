@@ -13,6 +13,7 @@
 // #include <emscripten.h>
 #include <utility>
 #include <cstring>
+#include <cmath>
 
 // make permisions possible
 enum class Permition {
@@ -69,9 +70,19 @@ int main() {
     //         }
     //     }
     // }
-    success = getStudentData('C', 10, "Sophia Martinez", "SophiaData.txt");
+    success = getSubjectData("Meth", 10, "subjectData.txt");
     if (success == 0) {
         std::cout << "Subject data written successfully\n";
+    }
+
+    success = getClassData('B', 10, "classData.txt");
+    if (success == 0) {
+        std::cout << "Class data written successfully\n";
+    }
+
+    success = getStudentData('C', 10, "Sophia Martinez", "SophiaData.txt");
+    if (success == 0) {
+        std::cout << "Student data written successfully\n";
     }
 
     return 0;
@@ -86,11 +97,15 @@ int getStudentData(const char className, int grade, const char* studentName, con
         });
         outFile << (*student)->getName() << ',' << (*student)->getID();
         for (auto subject = (*student)->getSubjectsStart(); subject != (*student)->getSubjectsEnd(); ++subject) {
+            int totalMark = 0;
+            float totalWeight = 0.0f;
             outFile << ',' << subject->first;
             for (const Record& record : subject->second.getRecords()) {
                 outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+                totalMark += (record.mark * record.weight);
+                totalWeight += record.weight;
             }
-            outFile << '$';
+            outFile << '@' << std::round(totalMark / totalWeight) << '@' << totalMark << ',' << totalWeight << '$';
         }
         outFile << '\n';
     } else {
@@ -108,11 +123,15 @@ int getClassData(const char className, int grade, const char* filename) {
         for (auto student = classesMap[grade][className].begin(); student != classesMap[grade][className].end(); ++student) {
             outFile << (*student)->getName() << ',' << (*student)->getID();
             for (auto subject = (*student)->getSubjectsStart(); subject != (*student)->getSubjectsEnd(); ++subject) {
+                int totalMark = 0;
+                float totalWeight = 0.0f;
                 outFile << ',' << subject->first;
                 for (const Record& record : subject->second.getRecords()) {
                     outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+                    totalMark += (record.mark * record.weight);
+                    totalWeight += record.weight;
                 }
-                outFile << '$';
+                outFile << '@' << std::round(totalMark / totalWeight) << '@' << '$';
             }
             outFile << '\n';
         }
@@ -130,11 +149,15 @@ int getSubjectData(const char* subjectName, int grade, const char* filename) {
     if (outFile.is_open()) {
         for (auto student = subjectsMap[grade][subjectName].begin(); student != subjectsMap[grade][subjectName].end(); ++student) {
             Subject& subject = (*student)->getSubject(subjectName);
+            int totalMark = 0;
+            float totalWeight = 0.0f;
             outFile << (*student)->getName() << ',' << (*student)->getID() << ',';
             for (const Record& record : subject.getRecords()) {
                 outFile << '$' << record.name << '|' << record.mark << '|' << record.weight << '|' << record.date;
+                totalMark += (record.mark * record.weight);
+                totalWeight += record.weight;
             }
-            outFile << "$\n";
+            outFile << '@' << std::round(totalMark / totalWeight) << '@' << "$\n";
         }
     } else {
         return -1; // Could not open file

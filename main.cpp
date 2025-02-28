@@ -97,7 +97,6 @@ int main() {
 // }
 
 Subject* getSubjects(const char* studentName, int grade, const char* subjectName) {
-    // Subject& sub = Subject();
     auto it = std::find_if(subjectsMap[grade][subjectName].begin(),
     subjectsMap[grade][subjectName].end(), [studentName](std::shared_ptr<Student> student) {
         return student->getName().c_str() == studentName;
@@ -107,20 +106,9 @@ Subject* getSubjects(const char* studentName, int grade, const char* subjectName
         return nullptr; // Student does not study this subject
     }
     
-    // auto student = *it; // Shared pointer of student
-    // auto it2 = std::find_if(student->getSubjects().begin(), student->getSubjects().end(), [subjectName](Subject sub) {
-    //     return sub.getName().c_str() == subjectName; 
-    // });
-    // Subject& sub = (*it)->getSubject(subjectName);
-    // if (sub == Subject()) {
-    //     return 
-    // }
-    // if (it2 == student->getSubjects().end()) {
-    //     return {-1, std::vector<Subject>::iterator()}; // No record of test
-    // }
-    
     return &(*it)->getSubject(subjectName);
 }
+
 
 int addRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, int mark, float weight, int date) {
     Subject* sub = getSubjects(studentName, grade, subjectName);
@@ -129,10 +117,6 @@ int addRecord(const char* studentName, int grade, const char* subjectName, const
         return 0;
     }
     return -1;
-    // if (duo.first == -1) {
-    //     return -1;
-    // }
-
 }
 
 
@@ -143,12 +127,7 @@ int removeRecord(const char* studentName, int grade, const char* subjectName, co
         return 0;
     }
     return -1;
-    // if (duo.first == -1) {
-    //     return -1;
-    // }
-
 }
-
 
 // Lets you edit record of a user
 int editRecord(const char* studentName, int grade, const char* subjectName, const char* recordName, const char* newName, int newMark, float newWeight, int newDate) {
@@ -158,10 +137,6 @@ int editRecord(const char* studentName, int grade, const char* subjectName, cons
         return 0;
     }
     return -1;
-    //     if (duo.first == -1) {
-    //     return -1;
-    // }
-
 }
 
 // Loads student data from specified file. Stores it into
@@ -187,16 +162,11 @@ int loadDataFromFile(const std::string& filename) {
             for (int i = 4; i < arguments.size(); ++i) {
                 records = split(arguments[i], '$');
                 Subject subject = Subject();
-                // subject.changeName(records[0].c_str()); // Changing name of subject
                 for (int j = 1; j < records.size(); ++j) {
                     details = split(records[j], '|');
                     subject.addRecord(details[0], std::stoi(details[1]), std::stof(details[2]), std::stoi(details[3]));
                 }
                 student->addSubject(records[0], subject); // Adding subject to student
-                
-                // for (const auto& o : subject.getRecords()) {
-                //     std::cout << o.name << '\n';
-                // }
             }
             // Adding student into one's class
             classesMap[student->getGrade()][student->getClass()].push_back(student);
@@ -204,10 +174,6 @@ int loadDataFromFile(const std::string& filename) {
                 // std::cout << "here\n";
                 subjectsMap[student->getGrade()][sub->first].push_back(student);
             }
-            // for (auto subName : student->getSubjects()) {
-            //     // Adding student into one's subjects
-            //     subjectsMap[student->getGrade()][student->getSubject(subName)].push_back(student);
-            // }
         }
     } else {
         std::cerr << "Could not open file " << DATA << '\n';
